@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+
+    #plots-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    .plot {
+      width: 48%;
+      margin-bottom: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    form {
+      margin-top: 20px;
+    }
+    
+  #fridge-inputForm {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+  }
+  
+  #parameters-form label {
+  	width: 40%;
+    display: inline-block;
+    margin-left: 0px;
+    margin-right: 0px
+
+  }
+  #parameters-form input {
+  	width: 59%;
+    margin-left: 0px;
+    margin-right: 0px
+  }
+    
+    .custom-button {
+  background-color: #4CAF50; /* Green background */
+  border: none; /* No border */
+  color: white; /* White text */
+  padding: 10px 30px; /* Padding */
+  text-align: center; /* Centered text */
+  text-decoration: none; /* No underline */
+  display: inline-block; /* Inline-block display */
+  font-size: 16px; /* Font size */
+  margin: 4px 2px; /* Margin */
+  cursor: pointer; /* Pointer cursor on hover */
+  border-radius: 4px; /* Rounded corners */
+  transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+.custom-button:hover {
+  background-color: #45a049; /* Darker shade of green on hover */
+}
+
+
+  </style>
+  <title>Symulacja systemu działania chłodziarki</title>
+</head>
+<body>
+
+<h1>Symulacja systemu działania chłodziarki</h1>
+<form id="parameters-form">
+  <label for="outside-temperature">Temperatura na zewnątrz: <span id="outside-temperature-value">21°C</span></label>
+  <input type="range" id="outside-temperature" min="2" max="40" value="21" step="0.1">
+
+  <label for="start-temperature">Temperatura początkowa: <span id="start-temperature-value">2°C</span></label>
+  <input type="range" id="start-temperature" min="2" max="40" value="6" step="0.1">
+
+  <label for="target-temperature">Temperatura docelowa: <span id="target-temperature-value">5°C</span></label>
+  <input type="range" id="target-temperature" min="2" max="10" value="5" step="0.1">
+
+  <label for="width">Szerokość lodówki: <span id="width-value">0.5m</span></label>
+  <input type="range" id="width" min="0.2" max="2" value="0.5" step="0.1">
+
+  <label for="height">Wysokość lodówki: <span id="height-value">1.5m</span></label>
+  <input type="range" id="height" min="0.2" max="2" value="1.5" step="0.1">
+
+  <label for="depth">Głębokość lodówki: <span id="depth-value">0.5m</span></label>
+  <input type="range" id="depth" min="0.2" max="2" value="0.5" step="0.1">
+
+  <label for="wall-thickness">Grubość ścianek lodówki: <span id="wall-thickness-value">0.05m</span></label>
+  <input type="range" id="wall-thickness" min="0.01" max="0.2" value="0.05" step="0.01">
+
+  <label for="wall-heat-transfer-coefficient">Przewodność cieplna ścianek lodówki: <span id="wall-heat-transfer-coefficient-value">0.0025 W/(m*K)</span></label>
+  <input type="range" id="wall-heat-transfer-coefficient" min="0.0001" max="0.01" value="0.0025" step="0.0001">
+
+  <label for="door-thickness">Grubość drzwi lodówki: <span id="door-thickness-value">0.05m</span></label>
+  <input type="range" id="door-thickness" min="0.01" max="0.2" value="0.05" step="0.01">
+
+  <label for="door-heat-transfer-coefficient">Przewodność cieplna drzwi lodówki: <span id="door-heat-transfer-coefficient-value">0.0025 W/(m*K)</span></label>
+  <input type="range" id="door-heat-transfer-coefficient" min="0.0001" max="0.005" value="0.0025" step="0.0001">
+
+  <label for="content-heat-transfer-coefficient">Współczynnik wnikania ciepła zawartości: <span id="content-heat-transfer-coefficient-value">50 W/(m^2*K)</span></label>
+  <input type="range" id="content-heat-transfer-coefficient" min="10" max="100" value="50" step="1">
+
+  <label for="content-surface-area">Pole powierzchni zawartości: <span id="content-surface-area-value">1m^2</span></label>
+  <input type="range" id="content-surface-area" min="0.1" max="2" value="1" step="0.1">
+
+  <label for="content-mass">Masa zawartości: <span id="content-mass-value">4kg</span></label>
+  <input type="range" id="content-mass" min="1" max="10" value="4" step="1">
+
+  <label for="content-specific-heat">Średnie ciepło właściwe zawartości: <span id="content-specific-heat-value">4000 J/(kg*K)</span></label>
+  <input type="range" id="content-specific-heat" min="1000" max="5000" value="4000" step="100">
+
+  <label for="max-cooling-capacity">Maksymalna moc chłodnicza: <span id="max-cooling-capacity-value">500W</span></label>
+  <input type="range" id="max-cooling-capacity" min="100" max="1000" value="500" step="10">
+
+  <label for="sample-time">Czas próbkowania: <span id="sample-time-value">0.5s</span></label>
+  <input type="range" id="sample-time" min="0.1" max="1" value="0.5" step="0.1">
+
+  <label for="simulated-time">Czas symulacji: <span id="simulated-time-value">50s</span></label>
+  <input type="range" id="simulated-time" min="10" max="10000" value="2500" step="5">
+
+  <label for="kp">Wzmocnienie regulatora (kp): <span id="kp-value">-100</span></label>
+  <input type="range" id="kp" min="-1000" max="0" value="-100" step="1">
+
+  <label for="ti">Czas zdwojenia (ti): <span id="ti-value">10</span></label>
+  <input type="range" id="ti" min="1" max="1000" value="100" step="1">
+
+  <label for="td">Czas wyprzedzenia (td): <span id="td-value">0</span></label>
+  <input type="range" id="td" min="0" max="25" value="1" step="0.1">
+
+  <form id="fridge-inputForm">
+      <div class="input-container">
+          <label for="fridge-start">Znacznik czasu w którym chłodziarka ma być otworzona (s): </label>
+          <input type="number" id="fridge-start" placeholder="1000" required>
+      </div>
+
+      <div class="input-container">
+          <label for="fridge-length">Ilość czasu przez który chłodziarka ma być otworzona (s): </label>
+          <input type="number" id="fridge-length" placeholder="60" required>
+      </div>
+
+      <button type="button" onclick="addFridgeInterval()" class="custom-button" style="background-color: #0096FF; display: block">Dodaj zakres</button>
+    
+      
+  <ul id="fridge-interval-list"></ul>
+    
+      <button type="button" onclick="resetAllInputs()" class="custom-button" style="background-color: #C00; float: right">Przywróć do wartości domyślnych</button>
+  </form>
+
+  
+  <button type="button" onclick="runSimulation()" class="custom-button">Uruchom symulację</button>
+</form>    <div class="slider-container">
+    </div>
+  
+  <br>
+
+
+<div id="plots-container">
+  <div id="plot1" class="plot"></div>
+  <div id="plot2" class="plot"></div>
+  <div id="plot3" class="plot"></div>
+  <div id="plot4" class="plot"></div>
+</div>
+
+<script>
+
+function resetAllInputs() {
+    // Reset all range input values
+    document.querySelectorAll('input[type="range"]').forEach(function (slider) {
+        slider.value = slider.defaultValue;
+    });
+
+    // Reset all number input values
+    document.querySelectorAll('input[type="number"]').forEach(function (numberInput) {
+        numberInput.value = numberInput.defaultValue;
+    });
+
+    // Update slider values after resetting
+    updateSliderValues();
+
+    // Clear fridge open times and interval list
+    fridge_open_times.length = 0;
+    document.getElementById('fridge-interval-list').innerHTML = '';
+}
+  
+const fridge_open_times = [];
+
+function addFridgeInterval() {
+    const startInput = document.getElementById('fridge-start');
+    const lengthInput = document.getElementById('fridge-length');
+
+    let start, end;
+
+    if (startInput.value.trim() === '') {
+        start = Math.floor(Math.random() * getValue('simulated-time'));
+				let length;
+        if (lengthInput.value.trim() === '') {
+          const maxLength = getValue('simulated-time') - start;
+          length = Math.floor(Math.random() * maxLength) + 1
+        } else {
+          length = parseInt(lengthInput.value);
+        }
+        end = start + length;
+    } else {
+        start = parseInt(startInput.value);
+        end = start + parseInt(lengthInput.value);
+        // Clear input fields
+        startInput.value = '';
+        lengthInput.value = '';
+    }
+
+    if (!isNaN(start) && !isNaN(end)) {
+        const intervalList = document.getElementById('fridge-interval-list');
+        const li = document.createElement('li');
+        li.className = 'fridge-interval';
+        li.textContent = `[${start}, ${end}]`;
+        fridge_open_times.push([start, end]);
+
+        intervalList.appendChild(li);
+    }
+}
+
+  
+   function updateSliderValues() {
+    document.getElementById('outside-temperature-value').innerText = document.getElementById('outside-temperature').value + '°C';
+    document.getElementById('start-temperature-value').innerText = document.getElementById('start-temperature').value + '°C';
+    document.getElementById('target-temperature-value').innerText = document.getElementById('target-temperature').value + '°C';
+    document.getElementById('width-value').innerText = document.getElementById('width').value + 'm';
+    document.getElementById('height-value').innerText = document.getElementById('height').value + 'm';
+    document.getElementById('depth-value').innerText = document.getElementById('depth').value + 'm';
+    document.getElementById('wall-thickness-value').innerText = document.getElementById('wall-thickness').value + 'm';
+    document.getElementById('wall-heat-transfer-coefficient-value').innerText = document.getElementById('wall-heat-transfer-coefficient').value + ' W/(m*K)';
+    document.getElementById('door-thickness-value').innerText = document.getElementById('door-thickness').value + 'm';
+    document.getElementById('door-heat-transfer-coefficient-value').innerText = document.getElementById('door-heat-transfer-coefficient').value + ' W/(m*K)';
+    document.getElementById('content-heat-transfer-coefficient-value').innerText = document.getElementById('content-heat-transfer-coefficient').value + ' W/(m^2*K)';
+    document.getElementById('content-surface-area-value').innerText = document.getElementById('content-surface-area').value + 'm^2';
+    document.getElementById('content-mass-value').innerText = document.getElementById('content-mass').value + 'kg';
+    document.getElementById('content-specific-heat-value').innerText = document.getElementById('content-specific-heat').value + ' J/(kg*K)';
+    document.getElementById('max-cooling-capacity-value').innerText = document.getElementById('max-cooling-capacity').value + 'W';
+    document.getElementById('sample-time-value').innerText = document.getElementById('sample-time').value + 's';
+    document.getElementById('simulated-time-value').innerText = document.getElementById('simulated-time').value + 's';
+    document.getElementById('kp-value').innerText = document.getElementById('kp').value;
+    document.getElementById('ti-value').innerText = document.getElementById('ti').value;
+    document.getElementById('td-value').innerText = document.getElementById('td').value;
+  }
+
+  // Attach an input event listener to each slider
+  document.querySelectorAll('input[type="range"]').forEach(function (slider) {
+    slider.addEventListener('input', updateSliderValues);
+  });
+
+// Initial update
+updateSliderValues();
+  
+class PIDController {
+    constructor(kp, ti, td, tp, minValue, maxValue) {
+        this.kp = kp;
+        this.ki = kp * tp / ti;
+        this.kd = kp * td / tp;
+        this.minValue = minValue;
+        this.maxValue = maxValue;
+        this.output = 0;
+        this.integral = 0;
+        this.previous_error = 0;
+    }
+
+    update(setpoint, measured_value) {
+        const error = setpoint - measured_value;
+        const derivative = error - this.previous_error;
+        const integral_delta = error * this.ki;
+
+        if (!((integral_delta > 0 && this.output > this.maxValue) || (integral_delta < 0 && this.output < this.minValue))) {
+            this.integral += integral_delta;
+        }
+
+        this.output = this.kp * error + this.integral + this.kd * derivative;
+        this.previous_error = error;
+
+        return Math.max(this.minValue, Math.min(this.maxValue, this.output));
+    }
+}
+  
+function getValue(name) {
+    return Number(document.getElementById(name).value);
+}
+
+function runSimulation() {
+    const outside_temperature = getValue("outside-temperature");
+    const start_temperature = getValue("start-temperature");
+    const target_temperature = getValue("target-temperature");
+    const width = getValue("width");
+    const height = getValue("height");
+    const depth = getValue("depth");
+    const wall_thickness = getValue("wall-thickness");
+    const wall_heat_transfer_coefficient = getValue("wall-heat-transfer-coefficient");
+    const door_thickness = getValue("door-thickness");
+    const door_heat_transfer_coefficient = getValue("door-heat-transfer-coefficient");
+    const content_heat_transfer_coefficient = getValue("content-heat-transfer-coefficient");
+    const content_surface_area = getValue("content-surface-area");
+    const content_mass = getValue("content-mass");
+    const content_specific_heat = getValue("content-specific-heat");
+    const max_cooling_capacity = getValue("max-cooling-capacity");
+    const sample_time = getValue("sample-time");
+    const simulated_time = getValue("simulated-time");
+    const kp = getValue("kp");
+    const ti = getValue("ti");
+    const td = getValue("td");
+
+    const heat_loss_factor_sides = 2 * wall_heat_transfer_coefficient * height * depth / wall_thickness;
+    const heat_loss_factor_top_bottom = 2 * wall_heat_transfer_coefficient * width * depth / wall_thickness;
+    const heat_loss_factor_back = 2 * wall_heat_transfer_coefficient * width * height / wall_thickness;
+    const heat_loss_factor_front = 2 * door_heat_transfer_coefficient * width * height / door_thickness;
+    const heat_loss_factor = heat_loss_factor_sides + heat_loss_factor_top_bottom + heat_loss_factor_back + heat_loss_factor_front;
+
+    console.log(heat_loss_factor);
+
+    const outside_temperature_K = outside_temperature + 273.15;
+    const start_temperature_K = start_temperature + 273.15;
+    const target_temperature_K = target_temperature + 273.15;
+
+    const iterations = Math.floor(simulated_time / sample_time);
+
+    let temperature = [start_temperature_K];
+    let dTemp = [0];
+    let control_signals = [0];
+    let time = [0.0];
+    let error = [start_temperature_K - target_temperature_K];
+
+    const pid = new PIDController(kp, ti, td, sample_time, 0, 100);
+
+    function fridge_open(t) {
+        for (const r of fridge_open_times) {
+            if (r[0] <= t && t <= r[1]) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    const simulated_time_steps = Math.floor(simulated_time / sample_time);
+
+    for (let i = 0; i < simulated_time_steps; i++) {
+        const t = i * sample_time;
+        const current_temperature = temperature[i];
+        const control_signal = pid.update(target_temperature_K, current_temperature);
+        const compressor_power = Math.max(0, Math.min(100, control_signal)) * 0.01 * max_cooling_capacity;
+        const tenp_difference = outside_temperature_K - current_temperature;
+        const q_zak = fridge_open(t) * content_heat_transfer_coefficient * content_surface_area * tenp_difference;
+        const q_in = heat_loss_factor * tenp_difference;
+        const deltaT = sample_time * (1 / (content_mass * content_specific_heat)) * (q_in + q_zak - compressor_power);
+        dTemp.push(deltaT / sample_time);
+        time.push(t);
+        error.push(current_temperature - target_temperature_K);
+        temperature.push(current_temperature + deltaT);
+        control_signals.push(control_signal);
+    }
+
+    const temperature_C = temperature.map(t => t - 273.15);
+    const target_temp = Array(time.length).fill(target_temperature);
+
+// Plotly Visualization
+    Plotly.newPlot('plot1', [{
+        x: time,
+        y: temperature_C,
+        name: 'Temperatura'
+    }, {
+        x: time,
+        y: target_temp,
+        name: 'Temperatura docelowa'
+    }], {title: 'Temperatura', xaxis: {title: 'Czas (s)'}, yaxis: {title: 'Temperatura (°C)'}});
+
+    Plotly.newPlot('plot2', [{
+        x: time,
+        y: control_signals,
+        name: 'Wielkość sterująca'
+    }], {title: 'Wielkość sterująca', xaxis: {title: 'Czas (s)'}, yaxis: {title: 'Wielkość sterująca'}});
+
+    Plotly.newPlot('plot3', [{
+        x: time,
+        y: dTemp,
+        name: 'dT/dt'
+    }], {title: 'Zmiana temperatury', xaxis: {title: 'Czas (s)'}, yaxis: {title: 'dT/dt (°C/s)'}});
+
+    Plotly.newPlot('plot4', [{
+        x: time,
+        y: error,
+        name: 'Uchyb'
+    }], {title: 'Uchyb', xaxis: {title: 'Czas (s)'}, yaxis: {title: 'Uchyb (°C)'}});
+}
+runSimulation()
+</script>
+
+</body>
+</html>
